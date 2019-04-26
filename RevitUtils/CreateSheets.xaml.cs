@@ -24,6 +24,7 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
+
 #endregion
 
 namespace RevitUtils
@@ -271,6 +272,20 @@ namespace RevitUtils
             {
                 MessageBox.Show("Загрузите наименования для элементов, которые вы хотите создать.\n\n" +
                                 "Для загрузки элементов по-умолчанию нажмите \"Загрузить стандартные\"\n. Для загрузки файла Excel нажмите \"Загрузить Excel\"");
+            }
+        }
+
+
+        private void FilterDeleteBtn_Click(object sender, RoutedEventArgs e)
+        {
+            using (Transaction t = new Transaction(_doc,"Удаление неиспользуемых фильтров"))
+            {
+                t.Start();
+
+                _doc.Delete(ViewFilters.GetUnUsedFilterIds(_doc));
+
+                t.Commit();
+                MessageBox.Show("Неиспользуемые фильтры удалены");
             }
         }
     }

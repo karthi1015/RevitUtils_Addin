@@ -154,13 +154,20 @@ namespace RevitUtils
 
             if (fs != null)
             {
-                foreach (var gridView1Item in GridView1.Items)
+                if (GridView1.Columns[0].GetCellContent(GridView1.Items[0]) is TextBlock textBlock && !string.IsNullOrEmpty(textBlock.Text))
                 {
-                    if (GridView1.Columns[0].GetCellContent(gridView1Item) is TextBlock x && !string.IsNullOrEmpty(x.Text))
-                        ViewSheet.Create(_doc, fs.Id);
+                    foreach (var gridView1Item in GridView1.Items)
+                    {
+                        if (GridView1.Columns[0].GetCellContent(gridView1Item) is TextBlock x && !string.IsNullOrEmpty(x.Text))
+                            ViewSheet.Create(_doc, fs.Id);
+                    }
+                    isSheetCreated = true;
                 }
-
-                isSheetCreated = true;
+                else
+                {
+                    MessageBox.Show("Загрузите наименования для элементов, которые вы хотите создать.\n\n" +
+                                    "Для загрузки элементов по-умолчанию нажмите \"Загрузить стандартные\". Для загрузки файла Excel нажмите \"Загрузить Excel\"");
+                }
             }
 
             tran.Commit();
@@ -190,49 +197,64 @@ namespace RevitUtils
 
         private void CreateWorkSetsBtn_Click(object sender, RoutedEventArgs e)
         {
-            // Worksets can only be created in a document with worksharing enabled
-            if (_doc.IsWorkshared)
+            if (GridView1.Columns[0].GetCellContent(GridView1.Items[0]) is TextBlock y && !string.IsNullOrEmpty(y.Text))
             {
-                using (Transaction worksetTransaction = new Transaction(_doc, "Создание рабочих наборов"))
+                if (_doc.IsWorkshared) // Worksets can only be created in a document with worksharing enabled
                 {
-                    worksetTransaction.Start();
-                    foreach (var gridViewItem in GridView1.Items)
+                    using (Transaction worksetTransaction = new Transaction(_doc, "Создание рабочих наборов"))
                     {
-                        // Workset name must not be in use by another workset
-                        if (GridView1.Columns[0].GetCellContent(gridViewItem) is TextBlock x &&
-                            !string.IsNullOrEmpty(x.Text) && WorksetTable.IsWorksetNameUnique(_doc, x.Text))
+                        worksetTransaction.Start();
+                        foreach (var gridViewItem in GridView1.Items)
                         {
-                            Workset.Create(_doc, x.Text);
+                            // Workset name must not be in use by another workset
+                            if (GridView1.Columns[0].GetCellContent(gridViewItem) is TextBlock x &&
+                                !string.IsNullOrEmpty(x.Text) && WorksetTable.IsWorksetNameUnique(_doc, x.Text))
+                            {
+                                Workset.Create(_doc, x.Text);
+                            }
                         }
+                        worksetTransaction.Commit();
                     }
-                    worksetTransaction.Commit();
+                    MessageBox.Show("Рабочие наборы созданы");
                 }
-                MessageBox.Show("Рабочие наборы созданы");
+                else
+                {
+                    MessageBox.Show("Worksets can only be created in a document with worksharing enabled\n\n" +
+                                    "(Рабочие наборы могут быть созданы только в документе с включенной совместной работой)");
+                }
             }
             else
             {
-                MessageBox.Show("Worksets can only be created in a document with worksharing enabled\n\n" +
-                                "(Рабочие наборы могут быть созданы только в документе с включенной совместной работой)");
+                MessageBox.Show("Загрузите наименования для элементов, которые вы хотите создать.\n\n" +
+                                "Для загрузки элементов по-умолчанию нажмите \"Загрузить стандартные\". Для загрузки файла Excel нажмите \"Загрузить Excel\"");
             }
         }
 
         private void ViewTypesCreateBtn_Click(object sender, RoutedEventArgs e)
         {
-            IEnumerable<ViewFamilyType> viewFamilyTypes =
-                from elem in new FilteredElementCollector(_doc).OfClass(typeof(ViewFamilyType))
-                let type = elem as ViewFamilyType
-                where type.ViewFamily == ViewFamily.StructuralPlan
-                select type;
-
-            using (Transaction viewFamilyTypesTransaction = new Transaction(_doc, "Создание типов планов несущих конструкций"))
+            if (GridView1.Columns[0].GetCellContent(GridView1.Items[0]) is TextBlock y && !string.IsNullOrEmpty(y.Text))
             {
-                viewFamilyTypesTransaction.Start();
+                IEnumerable<ViewFamilyType> viewFamilyTypes =
+                    from elem in new FilteredElementCollector(_doc).OfClass(typeof(ViewFamilyType))
+                    let type = elem as ViewFamilyType
+                    where type.ViewFamily == ViewFamily.StructuralPlan
+                    select type;
 
-                viewFamilyTypes.FirstOrDefault()?.Duplicate("new 1");
+                using (Transaction viewFamilyTypesTransaction = new Transaction(_doc, "Создание типов планов несущих конструкций"))
+                {
+                    viewFamilyTypesTransaction.Start();
 
-                viewFamilyTypesTransaction.Commit();
+                    viewFamilyTypes.FirstOrDefault()?.Duplicate("new 1");
+
+                    viewFamilyTypesTransaction.Commit();
+                }
+                MessageBox.Show("Типы планов несущих конструкций созданы");
             }
-            MessageBox.Show("Типы планов несущих конструкций созданы");
+            else
+            {
+                MessageBox.Show("Загрузите наименования для элементов, которые вы хотите создать.\n\n" +
+                                "Для загрузки элементов по-умолчанию нажмите \"Загрузить стандартные\". Для загрузки файла Excel нажмите \"Загрузить Excel\"");
+            }
         }
     }
 }

@@ -24,20 +24,12 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
+using Grid = Autodesk.Revit.DB.Grid;
 
 #endregion
 
 namespace RevitUtils
 {
-    /// <summary>
-    /// My customized model
-    /// </summary>
-    public class MyRow
-    {
-        public string Col1 { get; set; }
-        public string Col2 { get; set; }
-    }
-
     /// <summary>
     /// Логика взаимодействия для CreateSheets.xaml
     /// </summary>
@@ -286,6 +278,33 @@ namespace RevitUtils
 
                 t.Commit();
                 MessageBox.Show("Неиспользуемые фильтры удалены");
+            }
+            var docFiltersNames = ViewFilters.GetDocFilters(_doc).Select(f => new MyRow { Col1 = f.Name, Col2 = f.Id.ToString() }).ToList();
+            GridView1.ItemsSource = docFiltersNames;
+        }
+
+        private void ShowFiltersBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var docFiltersNames = ViewFilters.GetDocFilters(_doc).Select(f => new MyRow{Col1 = f.Name, Col2 = f.Id.ToString()}).ToList();
+            GridView1.ItemsSource = docFiltersNames;
+            GridView1.Columns[0].Header = "Фильтры";
+            GridView1.Columns[1].Header = "Id";
+
+            DataGridTextColumn textColumn = new DataGridTextColumn {Header = "Статус", Binding = new System.Windows.Data.Binding("State")};
+            GridView1.Columns.Add(textColumn);
+
+            var unUsedFilterIds = ViewFilters.GetUnUsedFilterIds(_doc);
+
+            foreach (var item in GridView1.ItemsSource)
+            {
+                MyRow row = (MyRow) item;
+                foreach (var unUsedFilterId in unUsedFilterIds)
+                {
+                    if (row.Col2.Equals(unUsedFilterId.ToString()))
+                    {
+                        row.State = State.UnUsedFilter;
+                    }
+                }
             }
         }
     }

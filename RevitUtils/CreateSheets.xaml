@@ -47,6 +47,7 @@
                 x:Name="GridView1"
                 Grid.Row="1"
                 Margin="10"
+                AutoGenerateColumns="False"
                 CanUserReorderColumns="False"
                 CanUserSortColumns="False"
                 ItemsSource="{DynamicResource ResourceKey=ExcelData}">
@@ -55,6 +56,34 @@
                         <local:MyRow />
                     </col:ArrayList>
                 </DataGrid.Resources>
+
+                <DataGrid.Columns>
+
+                    <DataGridTextColumn
+                        Width="190"
+                        Binding="{Binding Col1}"
+                        Header="Наименование"
+                        IsReadOnly="True"
+                        SortDirection="Descending" />
+                    <DataGridTextColumn
+                        Width="190"
+                        Binding="{Binding Col2}"
+                        Header="Наименование 2"
+                        IsReadOnly="True"
+                        SortDirection="Descending" />
+
+                </DataGrid.Columns>
+
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding State}" Value="UnUsedFilter">
+                                <Setter Property="Background" Value="Orange" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
+
             </DataGrid>
         </Grid>
         <GroupBox
@@ -148,20 +177,31 @@
             </Grid>
         </GroupBox>
         <GroupBox
+            Grid.Column="0"
             Width="405"
             Height="80"
             Margin="10,265,0,0"
             HorizontalAlignment="Left"
             VerticalAlignment="Top"
             Header="Фильтры">
-            <Button
-                x:Name="FilterDeleteBtn"
-                Height="25"
-                Margin="0,0,10,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Click="FilterDeleteBtn_Click"
-                Content="Удалить неиспользуемые" />
+            <Grid Margin="0">
+                <Button
+                    x:Name="FilterDeleteBtn"
+                    Height="25"
+                    Margin="0,0,10,0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Click="FilterDeleteBtn_Click"
+                    Content="Удалить неиспользуемые" />
+                <Button
+                    x:Name="ShowFiltersBtn"
+                    Height="26"
+                    Margin="87,16,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Click="ShowFiltersBtn_Click"
+                    Content="Показать фильтры" />
+            </Grid>
         </GroupBox>
     </Grid>
 </Window>

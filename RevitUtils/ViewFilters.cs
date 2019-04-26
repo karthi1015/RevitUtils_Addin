@@ -7,7 +7,7 @@ namespace RevitUtils
 {
     static class ViewFilters
     {
-        public static List<ElementId> GetUsedFilterIds(Document doc)
+        private static List<ElementId> GetUsedFilterIds(Document doc)
         {
             var views = new FilteredElementCollector(doc).OfClass(typeof(View)).ToElements().Cast<View>();
             List<ElementId> usedFilterIds = new List<ElementId>();
@@ -40,5 +40,10 @@ namespace RevitUtils
             return unusedFilterIds;
         }
 
+
+        public static IList<Element> GetDocFilters(Document doc)
+        {
+            return new FilteredElementCollector(doc).OfClass(typeof(ParameterFilterElement)).ToElements();
+        }
     }
 }

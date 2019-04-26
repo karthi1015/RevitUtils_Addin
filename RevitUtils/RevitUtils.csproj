@@ -61,6 +61,7 @@
     <Compile Include="CreateSheets.xaml.cs">
       <DependentUpon>CreateSheets.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MyRow.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewFilters.cs" />
   </ItemGroup>

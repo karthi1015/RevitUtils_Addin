@@ -184,13 +184,55 @@ namespace RevitUtils
                 }
 
                 tran.Commit();
+                MessageBox.Show("Листы созданы");
             }
         }
 
         private void CreateWorkSetsBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (GridView1.Columns[0].GetCellContent(GridView1.Items[1]) is TextBlock x)
-                MessageBox.Show(x.Text);
+            // Worksets can only be created in a document with worksharing enabled
+            if (_doc.IsWorkshared)
+            {
+                using (Transaction worksetTransaction = new Transaction(_doc, "Создание рабочих наборов"))
+                {
+                    worksetTransaction.Start();
+                    foreach (var gridViewItem in GridView1.Items)
+                    {
+                        // Workset name must not be in use by another workset
+                        if (GridView1.Columns[0].GetCellContent(gridViewItem) is TextBlock x &&
+                            !string.IsNullOrEmpty(x.Text) && WorksetTable.IsWorksetNameUnique(_doc, x.Text))
+                        {
+                            Workset.Create(_doc, x.Text);
+                        }
+                    }
+                    worksetTransaction.Commit();
+                }
+                MessageBox.Show("Рабочие наборы созданы");
+            }
+            else
+            {
+                MessageBox.Show("Worksets can only be created in a document with worksharing enabled\n\n" +
+                                "(Рабочие наборы могут быть созданы только в документе с включенной совместной работой)");
+            }
+        }
+
+        private void ViewTypesCreateBtn_Click(object sender, RoutedEventArgs e)
+        {
+            IEnumerable<ViewFamilyType> viewFamilyTypes =
+                from elem in new FilteredElementCollector(_doc).OfClass(typeof(ViewFamilyType))
+                let type = elem as ViewFamilyType
+                where type.ViewFamily == ViewFamily.StructuralPlan
+                select type;
+
+            using (Transaction viewFamilyTypesTransaction = new Transaction(_doc, "Создание типов планов несущих конструкций"))
+            {
+                viewFamilyTypesTransaction.Start();
+
+                viewFamilyTypes.FirstOrDefault()?.Duplicate("new 1");
+
+                viewFamilyTypesTransaction.Commit();
+            }
+            MessageBox.Show("Типы планов несущих конструкций созданы");
         }
     }
 }

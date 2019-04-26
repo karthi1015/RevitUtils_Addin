@@ -1,53 +1,165 @@
-﻿<Window x:Class="RevitUtils.CreateSheets"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:RevitUtils"
-             xmlns:col="clr-namespace:System.Collections;assembly=mscorlib"
-             xmlns:db="clr-namespace:Autodesk.Revit.DB;assembly=RevitAPI"
-             mc:Ignorable="d" 
-             WindowStartupLocation="CenterScreen" Width="388.666" Height="552.754" SizeToContent="WidthAndHeight" ResizeMode="CanMinimize">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="265"/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
-        <Button x:Name="LoadExcelBtn" Content="Загрузить Excel " Margin="10,50,283,0" VerticalAlignment="Top" Height="25" Click="LoadExcelBtn_Click" HorizontalAlignment="Left"/>
-        <TextBox Grid.Row="0" x:Name="FilePathTextBox" HorizontalAlignment="Left" Margin="10,10,15,220" TextWrapping="Wrap" Width="358" IsEnabled="False" Text="Загрузите список наименований" VerticalAlignment="Top" Height="25" VerticalContentAlignment="Center"/>
-        <Button Grid.Row="0" x:Name="CreateSheetsBtn" Content="Создать листы" Margin="278,94,22,146" Click="CreateSheetsBtn_Click" HorizontalAlignment="Left" VerticalAlignment="Top" Height="25"/>
-        <Button x:Name="CreateWorkSetsBtn" Grid.Row="0" Content="Создать рабочие наборы" Margin="10,133,229,107" Click="CreateWorkSetsBtn_Click" HorizontalAlignment="Left" VerticalAlignment="Top" Height="25"/>
-        <Button Grid.Row="0" Content="Планы несущих конструкций" Margin="10,210,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Height="25"/>
-        <Label Grid.Row="0" Content="Создать типоразмеры для видов" Margin="10,179,180,60" Height="25" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <Button Grid.Row="0" Content="Разрезы / фрагменты" Margin="195,210,15,30" HorizontalAlignment="Left" VerticalAlignment="Top" Height="25"/>
+﻿<Window
+    x:Class="RevitUtils.CreateSheets"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:col="clr-namespace:System.Collections;assembly=mscorlib"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:db="clr-namespace:Autodesk.Revit.DB;assembly=RevitAPI"
+    xmlns:local="clr-namespace:RevitUtils"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Width="1082"
+    Height="402"
+    ResizeMode="CanMinimize"
+    SizeToContent="WidthAndHeight"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <Grid MinHeight="370">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="425" />
+            <ColumnDefinition Width="650" />
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="1" Margin="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="45" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <TextBox
+                x:Name="FilePathTextBox"
+                Grid.Row="0"
+                Height="25"
+                Margin="10,10,114,10"
+                VerticalAlignment="Center"
+                HorizontalContentAlignment="Stretch"
+                IsEnabled="False"
+                Text="Загрузите список наименований"
+                TextWrapping="Wrap" />
+            <Button
+                x:Name="LoadExcelBtn"
+                Grid.Row="0"
+                Width="90"
+                Height="25"
+                Margin="0,0,10,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Click="LoadExcelBtn_Click"
+                Content="Загрузить Excel " />
+            <DataGrid
+                x:Name="GridView1"
+                Grid.Row="1"
+                Margin="10"
+                CanUserReorderColumns="False"
+                CanUserSortColumns="False"
+                ItemsSource="{DynamicResource ResourceKey=ExcelData}">
+                <DataGrid.Resources>
+                    <col:ArrayList x:Key="ExcelData">
+                        <local:MyRow />
+                    </col:ArrayList>
+                </DataGrid.Resources>
+            </DataGrid>
+        </Grid>
+        <GroupBox
+            Grid.Column="0"
+            Width="405"
+            Height="80"
+            Margin="10,95,0,0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Header="Рабочие наборы">
+            <Button
+                x:Name="CreateWorkSetsBtn"
+                Width="90"
+                Height="25"
+                Margin="0,0,10,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Click="CreateWorkSetsBtn_Click"
+                Content="Создать" />
+        </GroupBox>
+        <GroupBox
+            Grid.Column="0"
+            Width="405"
+            Height="80"
+            Margin="10,10,0,0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Header="Листы">
+            <Grid Margin="0">
+                <ComboBox
+                    x:Name="FamilyForViewSheetBox"
+                    Height="25"
+                    Margin="10,0,115,0"
+                    VerticalAlignment="Center"
+                    ItemsSource="{Binding TitleBlocks}"
+                    SelectedItem="{Binding STitleBlock}">
 
-        <DataGrid x:Name="GridView1" ItemsSource="{DynamicResource ResourceKey=ExcelData}" 
-                  Grid.Row="1" Margin="0,0,0,10" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch">
-            <DataGrid.Resources>
-                <col:ArrayList x:Key="ExcelData">
-                    <local:MyRow/>
-                </col:ArrayList>
-            </DataGrid.Resources>
-        </DataGrid>
-        <ComboBox Grid.Row="0" 
-                  x:Name="FamilyForViewSheetBox" 
-                  HorizontalAlignment="Left" 
-                  Margin="10,94,0,0" 
-                  VerticalAlignment="Top" Height="25"
-                  ItemsSource="{Binding Path=TitleBlocks}"   
-                  SelectedItem="{Binding Path=STitleBlock}" Width="250"  
-                  >
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate DataType="db:FamilySymbol">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Family.Name}" />
+                                <TextBlock Text=" - " />
+                                <TextBlock Text="{Binding Name}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button
+                    x:Name="CreateSheetsBtn"
+                    Width="90"
+                    Height="25"
+                    Margin="0,16,10,16"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Click="CreateSheetsBtn_Click"
+                    Content="Создать" />
 
-            <ComboBox.ItemTemplate>
-                <DataTemplate DataType="db:FamilySymbol">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Path=Family.Name}"/>
-                        <TextBlock Text=" - "/>
-                        <TextBlock Text="{Binding Path=Name}"/>
-                    </StackPanel>
-                </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>
-
+            </Grid>
+        </GroupBox>
+        <GroupBox
+            Grid.Column="0"
+            Width="405"
+            Height="80"
+            Margin="10,180,0,0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Header="Типоразмеры для видов">
+            <Grid Margin="0">
+                <RadioButton
+                    x:Name="PlansRadioBtn"
+                    Margin="10,10,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Content="Планы несущих конструкций" />
+                <RadioButton
+                    x:Name="CutAndFragmentRadioBtn"
+                    Margin="10,33,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Content="Разрезы / фрагменты" />
+                <Button
+                    x:Name="ViewTypesCreateBtn"
+                    Width="90"
+                    Height="25"
+                    Margin="0,0,10,0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Click="ViewTypesCreateBtn_Click"
+                    Content="Создать" />
+            </Grid>
+        </GroupBox>
+        <GroupBox
+            Width="405"
+            Height="80"
+            Margin="10,265,0,0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Header="Фильтры">
+            <Button
+                x:Name="FilterDeleteBtn"
+                Height="25"
+                Margin="0,0,10,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Content="Удалить неиспользуемые" />
+        </GroupBox>
     </Grid>
 </Window>

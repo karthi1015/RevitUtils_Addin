@@ -6,7 +6,7 @@
     <Assembly>RevitUtils.dll</Assembly>
     <FullClassName>RevitUtils.Command</FullClassName>
     <ClientId>c85b9a0b-ac1d-4b8e-8c68-a68464d43926</ClientId>
-    <VendorId></VendorId>
+    <VendorId>com.typepad</VendorId>
     <VendorDescription></VendorDescription>
   </AddIn>
   <AddIn Type="Application">
@@ -14,7 +14,7 @@
     <Assembly>RevitUtils.dll</Assembly>
     <FullClassName>RevitUtils.App</FullClassName>
     <ClientId>15e9c92a-3812-489c-94e3-9ea30fd0f3b7</ClientId>
-    <VendorId></VendorId>
+    <VendorId>com.typepad</VendorId>
     <VendorDescription></VendorDescription>
   </AddIn>
 </RevitAddIns>

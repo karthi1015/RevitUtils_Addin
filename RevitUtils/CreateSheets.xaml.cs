@@ -166,7 +166,7 @@ namespace RevitUtils
                 else
                 {
                     MessageBox.Show("Загрузите наименования для элементов, которые вы хотите создать.\n\n" +
-                                    "Для загрузки элементов по-умолчанию нажмите \"Загрузить стандартные\". Для загрузки файла Excel нажмите \"Загрузить Excel\"");
+                                    "Для загрузки элементов по-умолчанию нажмите \"Загрузить стандартные\"\n. Для загрузки файла Excel нажмите \"Загрузить Excel\"");
                 }
             }
 
@@ -226,34 +226,51 @@ namespace RevitUtils
             else
             {
                 MessageBox.Show("Загрузите наименования для элементов, которые вы хотите создать.\n\n" +
-                                "Для загрузки элементов по-умолчанию нажмите \"Загрузить стандартные\". Для загрузки файла Excel нажмите \"Загрузить Excel\"");
+                                "Для загрузки элементов по-умолчанию нажмите \"Загрузить стандартные\"\n. Для загрузки файла Excel нажмите \"Загрузить Excel\"");
             }
         }
 
         private void ViewTypesCreateBtn_Click(object sender, RoutedEventArgs e)
         {
+            ViewFamily viewType = ViewFamily.StructuralPlan;
+            string transName = "Создание типов планов несущих конструкций";
+            string completeMessage = "Типы планов несущих конструкций созданы";
+
+            if (PlansRadioBtn.IsChecked == false)
+            {
+                viewType = ViewFamily.Section;
+                transName = "Создание типов разрезов";
+                completeMessage = "Типы разрезов созданы";
+            }
+
             if (GridView1.Columns[0].GetCellContent(GridView1.Items[0]) is TextBlock y && !string.IsNullOrEmpty(y.Text))
             {
                 IEnumerable<ViewFamilyType> viewFamilyTypes =
                     from elem in new FilteredElementCollector(_doc).OfClass(typeof(ViewFamilyType))
                     let type = elem as ViewFamilyType
-                    where type.ViewFamily == ViewFamily.StructuralPlan
+                    where type.ViewFamily == viewType
                     select type;
 
-                using (Transaction viewFamilyTypesTransaction = new Transaction(_doc, "Создание типов планов несущих конструкций"))
+                using (Transaction viewFamilyTypesTransaction = new Transaction(_doc, transName))
                 {
                     viewFamilyTypesTransaction.Start();
 
-                    viewFamilyTypes.FirstOrDefault()?.Duplicate("new 1");
+                    foreach (var gridViewItem in GridView1.Items)
+                    {
+                        if (GridView1.Columns[0].GetCellContent(gridViewItem) is TextBlock x && !string.IsNullOrEmpty(x.Text))
+                        {
+                            viewFamilyTypes.FirstOrDefault()?.Duplicate(x.Text);
+                        }
+                    }
 
                     viewFamilyTypesTransaction.Commit();
                 }
-                MessageBox.Show("Типы планов несущих конструкций созданы");
+                MessageBox.Show(completeMessage);
             }
             else
             {
                 MessageBox.Show("Загрузите наименования для элементов, которые вы хотите создать.\n\n" +
-                                "Для загрузки элементов по-умолчанию нажмите \"Загрузить стандартные\". Для загрузки файла Excel нажмите \"Загрузить Excel\"");
+                                "Для загрузки элементов по-умолчанию нажмите \"Загрузить стандартные\"\n. Для загрузки файла Excel нажмите \"Загрузить Excel\"");
             }
         }
     }

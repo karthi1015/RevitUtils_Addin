@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+
 using Autodesk.Revit.DB;
 using Autodesk.Revit.Exceptions;
 
@@ -23,7 +24,8 @@ namespace RevitUtils
                 {
                 }
 
-                if (viewFilterIds != null) usedFilterIds.AddRange(viewFilterIds);
+                if (viewFilterIds != null)
+                    usedFilterIds.AddRange(viewFilterIds);
             }
 
             return usedFilterIds;
@@ -33,13 +35,12 @@ namespace RevitUtils
         {
             List<ElementId> usedFilterIds = GetUsedFilterIds(doc).ToList();
 
-            var unusedFilterIds = usedFilterIds.Count > 0 ?
-                new FilteredElementCollector(doc).OfClass(typeof(ParameterFilterElement)).Excluding(usedFilterIds).ToElementIds() :
-                new FilteredElementCollector(doc).OfClass(typeof(ParameterFilterElement)).ToElementIds();
+            var unusedFilterIds = usedFilterIds.Count > 0
+                                      ? new FilteredElementCollector(doc).OfClass(typeof(ParameterFilterElement)).Excluding(usedFilterIds).ToElementIds()
+                                      : new FilteredElementCollector(doc).OfClass(typeof(ParameterFilterElement)).ToElementIds();
 
             return unusedFilterIds;
         }
-
 
         public static IList<Element> GetDocFilters(Document doc)
         {

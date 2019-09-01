@@ -1,30 +1,16 @@
 ﻿#region Namespaces
 
-using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using Microsoft.Win32;
-using Excel = Microsoft.Office.Interop.Excel;
-using Autodesk.Revit.ApplicationServices;
-using Autodesk.Revit.Attributes;
+
 using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
-using Autodesk.Revit.UI.Selection;
-using Grid = Autodesk.Revit.DB.Grid;
+
+using Microsoft.Win32;
+
+using Excel = Microsoft.Office.Interop.Excel;
 
 #endregion
 
@@ -36,10 +22,15 @@ namespace RevitUtils
     public partial class CreateSheets
     {
         private Excel.Application _xlApp;
+
         private Excel.Workbook _xlWorkBook;
+
         private Excel.Worksheet _xlWorkSheet;
+
         private Excel.Range _range;
+
         private int _rowCount;
+
         private int _colCount;
 
         public IEnumerable<FamilySymbol> TitleBlocks { get; }
@@ -51,7 +42,7 @@ namespace RevitUtils
             InitializeComponent();
             this._doc = doc;
 
-            //get titleblock (family types of viewsheets)
+            // get titleblock (family types of viewsheets)
             FilteredElementCollector collector = new FilteredElementCollector(doc);
             collector.OfClass(typeof(FamilySymbol));
             collector.OfCategory(BuiltInCategory.OST_TitleBlocks);
@@ -68,19 +59,23 @@ namespace RevitUtils
 
             if (FilePathTextBox.Text != string.Empty)
             {
-                //open the Excel file and get the specified worksheet
+                // open the Excel file and get the specified worksheet
                 int rCnt;
 
                 _xlApp = new Excel.Application();
-                //open the excel
+
+                // open the excel
                 _xlWorkBook = _xlApp.Workbooks.Open(FilePathTextBox.Text);
-                //get the first sheet of the excel
+
+                // get the first sheet of the excel
                 _xlWorkSheet = (Excel.Worksheet)_xlWorkBook.Worksheets.Item[1];
 
                 _range = _xlWorkSheet.UsedRange;
+
                 // get the total row count
                 _rowCount = _range.Rows.Count;
-                //get the total column count
+
+                // get the total column count
                 _colCount = _range.Columns.Count;
 
                 var myRows = new List<MyRow>();
@@ -90,10 +85,7 @@ namespace RevitUtils
                     // traverse all the row in the excel
                     for (rCnt = 1; rCnt <= _rowCount; rCnt++)
                     {
-                        var myRow = new MyRow
-                        {
-                            Col1 = (string)(_range.Cells[rCnt, 1] as Excel.Range)?.Value2.ToString(),
-                        };
+                        var myRow = new MyRow { Col1 = (string)(_range.Cells[rCnt, 1] as Excel.Range)?.Value2.ToString(), };
 
                         myRows.Add(myRow);
                     }
@@ -103,14 +95,14 @@ namespace RevitUtils
                     // traverse all the row in the excel
                     for (rCnt = 1; rCnt <= _rowCount; rCnt++)
                     {
-                        //traverse columns (the first column is not included)
+                        // traverse columns (the first column is not included)
                         for (int col = 2; col <= _colCount; col++)
                         {
                             var myRow = new MyRow
-                            {
-                                Col1 = (string)(_range.Cells[rCnt, 1] as Excel.Range)?.Value2.ToString(),
-                                Col2 = (string)(_range.Cells[rCnt, col] as Excel.Range)?.Value2.ToString()
-                            };
+                                            {
+                                                Col1 = (string)(_range.Cells[rCnt, 1] as Excel.Range)?.Value2.ToString(),
+                                                Col2 = (string)(_range.Cells[rCnt, col] as Excel.Range)?.Value2.ToString()
+                                            };
 
                             myRows.Add(myRow);
                         }
@@ -119,7 +111,7 @@ namespace RevitUtils
 
                 GridView1.ItemsSource = myRows;
 
-                //release the resources
+                // release the resources
                 _xlWorkBook.Close(true);
                 _xlApp.Quit();
                 Marshal.ReleaseComObject(_xlWorkSheet);
@@ -154,12 +146,14 @@ namespace RevitUtils
                         if (GridView1.Columns[0].GetCellContent(gridView1Item) is TextBlock x && !string.IsNullOrEmpty(x.Text))
                             ViewSheet.Create(_doc, fs.Id);
                     }
+
                     isSheetCreated = true;
                 }
                 else
                 {
-                    MessageBox.Show("Загрузите наименования для элементов, которые вы хотите создать.\n\n" +
-                                    "Для загрузки элементов по-умолчанию нажмите \"Загрузить стандартные\"\n. Для загрузки файла Excel нажмите \"Загрузить Excel\"");
+                    MessageBox.Show(
+                        "Загрузите наименования для элементов, которые вы хотите создать.\n\n"
+                        + "Для загрузки элементов по-умолчанию нажмите \"Загрузить стандартные\"\n. Для загрузки файла Excel нажмите \"Загрузить Excel\"");
                 }
             }
 
@@ -173,7 +167,7 @@ namespace RevitUtils
                 collector.OfClass(typeof(ViewSheet));
                 var allSheets = collector.ToElements().Cast<ViewSheet>().ToList();
 
-                //set sheet numbers
+                // set sheet numbers
                 for (int i = 0; i < allSheets.Count; i++)
                 {
                     if (GridView1.Columns[0].GetCellContent(GridView1.Items[i]) is TextBlock x && !string.IsNullOrEmpty(x.Text))
@@ -192,34 +186,38 @@ namespace RevitUtils
         {
             if (GridView1.Columns[0].GetCellContent(GridView1.Items[0]) is TextBlock y && !string.IsNullOrEmpty(y.Text))
             {
-                if (_doc.IsWorkshared) // Worksets can only be created in a document with worksharing enabled
+                if (_doc.IsWorkshared)
                 {
+                    // Worksets can only be created in a document with worksharing enabled
                     using (Transaction worksetTransaction = new Transaction(_doc, "Создание рабочих наборов"))
                     {
                         worksetTransaction.Start();
                         foreach (var gridViewItem in GridView1.Items)
                         {
                             // Workset name must not be in use by another workset
-                            if (GridView1.Columns[0].GetCellContent(gridViewItem) is TextBlock x &&
-                                !string.IsNullOrEmpty(x.Text) && WorksetTable.IsWorksetNameUnique(_doc, x.Text))
+                            if (GridView1.Columns[0].GetCellContent(gridViewItem) is TextBlock x && !string.IsNullOrEmpty(x.Text) && WorksetTable.IsWorksetNameUnique(_doc, x.Text))
                             {
                                 Workset.Create(_doc, x.Text);
                             }
                         }
+
                         worksetTransaction.Commit();
                     }
+
                     MessageBox.Show("Рабочие наборы созданы");
                 }
                 else
                 {
-                    MessageBox.Show("Worksets can only be created in a document with worksharing enabled\n\n" +
-                                    "(Рабочие наборы могут быть созданы только в документе с включенной совместной работой)");
+                    MessageBox.Show(
+                        "Worksets can only be created in a document with worksharing enabled\n\n"
+                        + "(Рабочие наборы могут быть созданы только в документе с включенной совместной работой)");
                 }
             }
             else
             {
-                MessageBox.Show("Загрузите наименования для элементов, которые вы хотите создать.\n\n" +
-                                "Для загрузки элементов по-умолчанию нажмите \"Загрузить стандартные\"\n. Для загрузки файла Excel нажмите \"Загрузить Excel\"");
+                MessageBox.Show(
+                    "Загрузите наименования для элементов, которые вы хотите создать.\n\n"
+                    + "Для загрузки элементов по-умолчанию нажмите \"Загрузить стандартные\"\n. Для загрузки файла Excel нажмите \"Загрузить Excel\"");
             }
         }
 
@@ -238,11 +236,10 @@ namespace RevitUtils
 
             if (GridView1.Columns[0].GetCellContent(GridView1.Items[0]) is TextBlock y && !string.IsNullOrEmpty(y.Text))
             {
-                IEnumerable<ViewFamilyType> viewFamilyTypes =
-                    from elem in new FilteredElementCollector(_doc).OfClass(typeof(ViewFamilyType))
-                    let type = elem as ViewFamilyType
-                    where type.ViewFamily == viewType
-                    select type;
+                IEnumerable<ViewFamilyType> viewFamilyTypes = from elem in new FilteredElementCollector(_doc).OfClass(typeof(ViewFamilyType))
+                                                              let type = elem as ViewFamilyType
+                                                              where type.ViewFamily == viewType
+                                                              select type;
 
                 using (Transaction viewFamilyTypesTransaction = new Transaction(_doc, transName))
                 {
@@ -258,19 +255,20 @@ namespace RevitUtils
 
                     viewFamilyTypesTransaction.Commit();
                 }
+
                 MessageBox.Show(completeMessage);
             }
             else
             {
-                MessageBox.Show("Загрузите наименования для элементов, которые вы хотите создать.\n\n" +
-                                "Для загрузки элементов по-умолчанию нажмите \"Загрузить стандартные\"\n. Для загрузки файла Excel нажмите \"Загрузить Excel\"");
+                MessageBox.Show(
+                    "Загрузите наименования для элементов, которые вы хотите создать.\n\n"
+                    + "Для загрузки элементов по-умолчанию нажмите \"Загрузить стандартные\"\n. Для загрузки файла Excel нажмите \"Загрузить Excel\"");
             }
         }
 
-
         private void FilterDeleteBtn_Click(object sender, RoutedEventArgs e)
         {
-            using (Transaction t = new Transaction(_doc,"Удаление неиспользуемых фильтров"))
+            using (Transaction t = new Transaction(_doc, "Удаление неиспользуемых фильтров"))
             {
                 t.Start();
 
@@ -279,25 +277,26 @@ namespace RevitUtils
                 t.Commit();
                 MessageBox.Show("Неиспользуемые фильтры удалены");
             }
+
             var docFiltersNames = ViewFilters.GetDocFilters(_doc).Select(f => new MyRow { Col1 = f.Name, Col2 = f.Id.ToString() }).ToList();
             GridView1.ItemsSource = docFiltersNames;
         }
 
         private void ShowFiltersBtn_Click(object sender, RoutedEventArgs e)
         {
-            var docFiltersNames = ViewFilters.GetDocFilters(_doc).Select(f => new MyRow{Col1 = f.Name, Col2 = f.Id.ToString()}).ToList();
+            var docFiltersNames = ViewFilters.GetDocFilters(_doc).Select(f => new MyRow { Col1 = f.Name, Col2 = f.Id.ToString() }).ToList();
             GridView1.ItemsSource = docFiltersNames;
             GridView1.Columns[0].Header = "Фильтры";
             GridView1.Columns[1].Header = "Id";
 
-            DataGridTextColumn textColumn = new DataGridTextColumn {Header = "Статус", Binding = new System.Windows.Data.Binding("State")};
+            DataGridTextColumn textColumn = new DataGridTextColumn { Header = "Статус", Binding = new System.Windows.Data.Binding("State") };
             GridView1.Columns.Add(textColumn);
 
             var unUsedFilterIds = ViewFilters.GetUnUsedFilterIds(_doc);
 
             foreach (var item in GridView1.ItemsSource)
             {
-                MyRow row = (MyRow) item;
+                MyRow row = (MyRow)item;
                 foreach (var unUsedFilterId in unUsedFilterIds)
                 {
                     if (row.Col2.Equals(unUsedFilterId.ToString()))

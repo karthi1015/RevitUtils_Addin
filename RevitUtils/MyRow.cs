@@ -3,6 +3,7 @@
     public enum State
     {
         UsedFilter,
+
         UnUsedFilter
     }
 
@@ -12,7 +13,9 @@
     public class MyRow
     {
         public string Col1 { get; set; }
+
         public string Col2 { get; set; }
+
         public State State { get; set; }
     }
 }
